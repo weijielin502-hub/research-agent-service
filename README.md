@@ -44,7 +44,7 @@ On Windows, run `./start_live.ps1` from this directory. It reads Tavily and opti
 2. Install dependencies if needed: `python -m pip install -r requirements.txt`.
 3. Create `.env.local` in this directory with `TAVILY_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL=https://api.deepseek.com`, and `OPENAI_MODEL=deepseek-flash`. Keep real values only in this ignored file; do not put keys in commands, README or Git.
 4. Run `.\start_live.ps1` and leave that PowerShell window open. Open <http://127.0.0.1:8001>; `/health` should report `provider=tavily` and `model_enabled=true`. Live run metadata is saved in the ignored `live_research.db` file.
-5. Enter a topic and click **Run research agent**. Full-page processing may take several minutes. The page shows search and page-read progress, the number of complete pages, and any pages whose body was unavailable. The finished answer should show `Mode: model` and numbered citations.
+5. Enter a topic, optionally choose a published-date window, and click **Run research agent**. Selecting a time window strictly excludes pages without a detectable publication date. Search depth is fixed at `basic`. Full-page processing may take several minutes. The page shows search response time per call, total report time, page-read progress, the number of complete pages, and any pages whose body was unavailable. The finished answer should show `Mode: model` and numbered citations. `/api/metrics` reports average measured search response time and average completed report time over the latest 20 runs for this provider; sample counts are shown alongside each average.
 6. Press `Ctrl+C` in the PowerShell window to stop the service. After editing `.env.local` or source code, restart the service for changes to take effect.
 
 ## Verification

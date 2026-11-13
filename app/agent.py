@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+from time import perf_counter
 from urllib.parse import urlsplit, urlunsplit
 
 from openai import OpenAI
@@ -126,19 +127,28 @@ class ResearchAgent:
         self.min_sources = min_sources
         self.max_queries = max_queries
 
-    def run(self, topic: str, on_event=lambda event: None) -> dict:
+    def run(self, topic: str, on_event=lambda event: None, *, search_options: dict | None = None) -> dict:
+        search_options = search_options or {}
+        search_depth = "basic" if getattr(self.provider, "name", "") == "tavily" else "fixture"
         queries = [topic, f"{topic} overview"][: self.max_queries]
         raw: list[dict] = []
         sources: list[dict] = []
         for attempt, query in enumerate(queries, 1):
             on_event({"step": "search", "attempt": attempt, "query": query})
+            started = perf_counter()
             try:
-                raw.extend(self.provider.search(query))
+                raw.extend(self.provider.search(query, **search_options))
             except Exception as exc:
+                on_event({"step": "search_timing", "attempt": attempt,
+                          "elapsed_ms": round((perf_counter() - started) * 1000),
+                          "search_depth": search_depth, "success": False})
                 on_event({"step": "search_error", "attempt": attempt, "error": type(exc).__name__})
                 if attempt == len(queries) and not raw:
                     raise RuntimeError("All search attempts failed") from exc
                 continue
+            on_event({"step": "search_timing", "attempt": attempt,
+                      "elapsed_ms": round((perf_counter() - started) * 1000),
+                      "search_depth": search_depth, "success": True})
             sources = normalize_items(raw)
             on_event({"step": "evaluate", "attempt": attempt, "sources": len(sources)})
             if len(sources) >= self.min_sources:
@@ -171,6 +181,7 @@ class ResearchAgent:
                            "content_type": "page_body" if source["body"] else "search_snippet_only"}
                           for source in sources]
         return {"answer": answer, "sources": public_sources, "summary_mode": mode,
+                "search_depth": search_depth, "search_options": search_options,
                 "searched_results": len(sources), "extracted_pages": len(evidence_sources) if is_live else 0,
                 "extraction_failures": [source["url"] for source in sources if is_live and not source["body"]],
                 "coverage_warning": len(evidence_sources) < self.min_sources,

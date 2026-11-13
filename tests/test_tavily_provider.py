@@ -29,6 +29,25 @@ def test_tavily_request_uses_bearer_header(monkeypatch):
     assert items[0]["raw_content"] == "Full page body"
 
 
+def test_tavily_strict_date_filter(monkeypatch):
+    seen = {}
+
+    class Response:
+        def raise_for_status(self): pass
+        def json(self): return {"results": []}
+
+    def fake_post(url, **kwargs):
+        seen.update(kwargs["json"])
+        return Response()
+
+    monkeypatch.setattr("app.providers.httpx.post", fake_post)
+    TavilySearch("test-key").search("example", start_date="2026-01-01", end_date="2026-02-01")
+    assert seen["start_date"] == "2026-01-01"
+    assert seen["end_date"] == "2026-02-01"
+    assert seen["filter_by_published_date"] is True
+    assert seen["search_depth"] == "basic"
+
+
 def test_tavily_extract_retries_missing_body(monkeypatch):
     seen = {}
 

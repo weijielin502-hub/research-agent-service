@@ -11,14 +11,17 @@
   <div class="top"><div class="brand">Research Agent <span style="color:#6ee7c8">/</span> Engineering Demo</div><div class="badge" id="provider">Checking provider…</div></div>
   <h1>From a question to a traceable brief.</h1>
   <p class="lead">A small research agent that plans searches, checks source coverage, removes duplicates and produces a cited answer. Its decisions and failure state stay visible.</p>
-  <section class="grid"><div class="card"><div class="eyebrow">01 · Start a run</div><label for="topic">Research topic</label><input id="topic" value="Battery recycling programs" maxlength="200"><button id="start">Run research agent →</button><p class="hint" id="hint">Checking search mode…</p></div><div class="card"><div class="eyebrow">02 · Run trace</div><div id="result" class="empty">Submit a topic to see the planning, search, page reading and synthesis steps.</div></div></section>
+  <section class="grid"><div class="card"><div class="eyebrow">01 · Start a run</div><label for="topic">Research topic</label><input id="topic" value="Battery recycling programs" maxlength="200"><div id="dateOptions"><label for="timeRange">Published within</label><select id="timeRange"><option value="">Any time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="year">Past year</option><option value="custom">Custom dates</option></select><div id="customDates" hidden><label for="startDate">From</label><input id="startDate" type="date"><label for="endDate">Through</label><input id="endDate" type="date"></div><p class="hint">Dated results only when a time filter is selected. Search depth: <strong>basic</strong>.</p></div><button id="start">Run research agent →</button><p class="hint" id="hint">Checking search mode…</p></div><div class="card"><div class="eyebrow">02 · Run trace</div><div id="result" class="empty">Submit a topic to see the planning, search, page reading and synthesis steps.</div><div id="metrics" class="muted"></div></div></section>
   <section class="split"><div class="card"><div class="eyebrow">03 · Grounded answer</div><div id="answer" class="empty">The answer will appear here with source numbers.</div></div><div class="card"><div class="eyebrow">04 · Sources</div><div id="sources" class="empty">Citable source records will appear here.</div></div></section>
 </main><script>
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('timeRange').onchange=()=>$('customDates').hidden=$('timeRange').value!=='custom';
+async function loadMetrics(){const m=await (await fetch('/api/metrics')).json();$('metrics').textContent='Recent '+m.sample_runs+' runs · average search response '+(m.avg_search_ms===null?'—':(m.avg_search_ms/1000).toFixed(2)+' s')+' ('+m.search_calls+' calls) · average completed report '+(m.avg_total_ms===null?'—':(m.avg_total_ms/1000).toFixed(1)+' s')+' ('+m.completed_runs+' runs)';}
 async function poll(id){
   for(let i=0;i<900;i++){
     const r=await fetch('/api/runs/'+id);const x=await r.json();
-    $('result').innerHTML='<span class="status '+(x.status==='failed'?'failed':'')+'">'+esc(x.status)+'</span><div class="timeline">'+x.events.slice(-20).map(e=>'<span class="step">'+esc(e.step)+(e.attempt?' #'+e.attempt:'')+(e.sources!==undefined?' · '+e.sources+' sources':'')+(e.source_id?' · source '+e.source_id:'')+'</span>').join('')+'</div><div class="muted">Run '+esc(id)+' · '+esc(x.attempts)+' search attempt(s) · '+esc(x.provider)+' provider</div>'+(x.error?'<p class="error">'+esc(x.error)+'</p>':'');
+    const timings=x.events.filter(e=>e.step==='search_timing').map(e=>(e.elapsed_ms/1000).toFixed(2)+' s');
+    $('result').innerHTML='<span class="status '+(x.status==='failed'?'failed':'')+'">'+esc(x.status)+'</span><div class="timeline">'+x.events.slice(-20).map(e=>'<span class="step">'+esc(e.step)+(e.attempt?' #'+e.attempt:'')+(e.sources!==undefined?' · '+e.sources+' sources':'')+(e.source_id?' · source '+e.source_id:'')+'</span>').join('')+'</div><div class="muted">Run '+esc(id)+' · '+esc(x.attempts)+' search attempt(s) · '+esc(x.provider)+' provider · search depth '+(x.provider==='tavily'?'basic':'fixture')+(timings.length?' · search response '+timings.join(', '):'')+(x.result?.total_elapsed_ms!==undefined?' · total '+(x.result.total_elapsed_ms/1000).toFixed(1)+' s':'')+'</div>'+(x.error?'<p class="error">'+esc(x.error)+'</p>':'');
     if(x.status==='completed'){
       const z=x.result;
       $('answer').textContent=z.answer+'\n\nMode: '+z.summary_mode+(x.provider==='tavily'?' · Full pages read: '+z.extracted_pages+'/'+z.searched_results:'')+(z.coverage_warning?' · Limited source coverage':'');
@@ -28,11 +31,12 @@ async function poll(id){
     if(x.status==='failed')break;
     await new Promise(ok=>setTimeout(ok,1000));
   }
-  $('start').disabled=false;
+  $('start').disabled=false;loadMetrics().catch(()=>{});
 }
-$('start').onclick=async()=>{$('start').disabled=true;$('answer').textContent='Working…';$('sources').textContent='Collecting sources…';try{const r=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:$('topic').value})});const x=await r.json();if(!r.ok)throw new Error(JSON.stringify(x.detail));await poll(x.id)}catch(e){$('result').textContent='Request failed: '+e.message;$('start').disabled=false}};
+$('start').onclick=async()=>{$('start').disabled=true;$('answer').textContent='Working…';$('sources').textContent='Collecting sources…';try{const choice=$('timeRange').value;const request={topic:$('topic').value};if(choice==='custom'){if($('startDate').value)request.start_date=$('startDate').value;if($('endDate').value)request.end_date=$('endDate').value;if(!request.start_date&&!request.end_date)throw new Error('Select at least one custom date');}else if(choice)request.time_range=choice;const r=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});const x=await r.json();if(!r.ok)throw new Error(JSON.stringify(x.detail));await poll(x.id)}catch(e){$('result').textContent='Request failed: '+e.message;$('start').disabled=false}};
 fetch('/health').then(r=>r.json()).then(x=>{
   $('provider').textContent=x.provider+' provider · '+(x.model_enabled?'model ready':'no model')+' · '+x.status;
   $('hint').textContent=x.provider==='tavily'?'Live mode searches up to 20 results and reads complete available webpages. Large pages can take several minutes and use many model calls.':'Offline mode uses synthetic articles and an extractive summary.';
+  $('dateOptions').hidden=x.provider!=='tavily';loadMetrics().catch(()=>{});
 }).catch(()=>$('provider').textContent='Service unavailable');
 </script></body></html>

@@ -13,7 +13,7 @@ class FixtureSearch:
         path = fixture_path or Path(__file__).resolve().parent.parent / "sample_data" / "articles.json"
         self.items = json.loads(path.read_text(encoding="utf-8"))
 
-    def search(self, query: str) -> list[dict]:
+    def search(self, query: str, **kwargs) -> list[dict]:
         # The second query returns one extra source to demonstrate coverage expansion.
         return self.items[:3] if "overview" not in query.lower() else self.items[2:]
 
@@ -26,12 +26,22 @@ class TavilySearch:
         if not self.api_key:
             raise ValueError("TAVILY_API_KEY is required for the tavily provider")
 
-    def search(self, query: str) -> list[dict]:
+    def search(self, query: str, *, time_range: str | None = None,
+               start_date: str | None = None, end_date: str | None = None) -> list[dict]:
+        payload = {"query": query, "max_results": 20, "search_depth": "basic",
+                   "include_raw_content": "markdown"}
+        if time_range:
+            payload["time_range"] = time_range
+        if start_date:
+            payload["start_date"] = start_date
+        if end_date:
+            payload["end_date"] = end_date
+        if time_range or start_date or end_date:
+            payload["filter_by_published_date"] = True
         response = httpx.post(
             "https://api.tavily.com/search",
             headers={"Authorization": f"Bearer {self.api_key}"},
-            json={"query": query, "max_results": 20, "search_depth": "basic",
-                  "include_raw_content": "markdown"},
+            json=payload,
             timeout=90,
         )
         response.raise_for_status()
