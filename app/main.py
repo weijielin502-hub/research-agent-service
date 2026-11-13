@@ -51,7 +51,8 @@ def create_app(database_url: str | None = None, provider=None) -> FastAPI:
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "provider": app.state.provider.name}
+        return {"status": "ok", "provider": app.state.provider.name,
+                "model_enabled": bool(os.getenv("OPENAI_API_KEY") and os.getenv("OPENAI_MODEL"))}
 
     @app.post("/api/runs", status_code=202)
     def create_run(request: RunRequest, background: BackgroundTasks):

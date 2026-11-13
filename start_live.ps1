@@ -27,6 +27,11 @@ if (-not $env:TAVILY_API_KEY) {
 }
 if (-not $env:TAVILY_API_KEY) { throw 'Tavily API key is required.' }
 $env:SEARCH_PROVIDER = 'tavily'
+$setLiveDatabase = $false
+if (-not $env:DATABASE_URL) {
+    $env:DATABASE_URL = 'sqlite:///./live_research.db'
+    $setLiveDatabase = $true
+}
 Push-Location -LiteralPath $PSScriptRoot
 try {
     Write-Host 'Live search will be available at http://127.0.0.1:8001'
@@ -34,6 +39,7 @@ try {
 } finally {
     Pop-Location
     if ($promptedForKey) { Remove-Item Env:TAVILY_API_KEY -ErrorAction SilentlyContinue }
+    if ($setLiveDatabase) { Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue }
     foreach ($name in $loadedLocalKeys) {
         Remove-Item -LiteralPath ("Env:" + $name) -ErrorAction SilentlyContinue
     }

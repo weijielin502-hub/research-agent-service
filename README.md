@@ -34,9 +34,18 @@ See [the exact workflow and result fields](FLOW.md) for the current search and a
 
 ## Live integrations
 
-Use `.env.example` as a configuration reference, then export `SEARCH_PROVIDER=tavily` and `TAVILY_API_KEY` in your shell or process manager. Tavily requests up to 20 basic-search results per query; after deduplication, every retained result is included in the bounded model input. Set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` for a DeepSeek-written summary. If model output lacks valid source numbers, it falls back to an extractive summary. Offline fixture mode remains available without credentials.
+Use `.env.example` as a configuration reference, then export `SEARCH_PROVIDER=tavily` and `TAVILY_API_KEY` in your shell or process manager. Tavily requests up to 20 basic-search results and extracts their full page bodies. Missing bodies are retried with Tavily Extract. Set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` for a DeepSeek-written summary. Complete page bodies are sent directly or in consecutive model chunks; search snippets never replace failed page extraction. A live run fails visibly if no body is available, model synthesis fails, or the 5,000,000-character safety limit is exceeded. Offline fixture mode remains available without credentials. [Workflow and limits](FLOW.md) explains the chunking and result fields.
 
 On Windows, run `./start_live.ps1` from this directory. It reads Tavily and optional model configuration from an ignored `.env.local` if present, or prompts for the Tavily key without echoing it. It starts a separate live server at <http://127.0.0.1:8001>. The existing offline server on port 8000 can remain running. Live Tavily results depend on your API plan and network access.
+
+### Start a full-page live run on Windows
+
+1. In PowerShell, go to this repository: `cd E:\yytt\demo整理\research-agent-service`.
+2. Install dependencies if needed: `python -m pip install -r requirements.txt`.
+3. Create `.env.local` in this directory with `TAVILY_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL=https://api.deepseek.com`, and `OPENAI_MODEL=deepseek-flash`. Keep real values only in this ignored file; do not put keys in commands, README or Git.
+4. Run `.\start_live.ps1` and leave that PowerShell window open. Open <http://127.0.0.1:8001>; `/health` should report `provider=tavily` and `model_enabled=true`. Live run metadata is saved in the ignored `live_research.db` file.
+5. Enter a topic and click **Run research agent**. Full-page processing may take several minutes. The page shows search and page-read progress, the number of complete pages, and any pages whose body was unavailable. The finished answer should show `Mode: model` and numbered citations.
+6. Press `Ctrl+C` in the PowerShell window to stop the service. After editing `.env.local` or source code, restart the service for changes to take effect.
 
 ## Verification
 

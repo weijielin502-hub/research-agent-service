@@ -30,12 +30,31 @@ class TavilySearch:
         response = httpx.post(
             "https://api.tavily.com/search",
             headers={"Authorization": f"Bearer {self.api_key}"},
-            json={"query": query, "max_results": 20, "search_depth": "basic"},
-            timeout=15,
+            json={"query": query, "max_results": 20, "search_depth": "basic",
+                  "include_raw_content": "markdown"},
+            timeout=90,
         )
         response.raise_for_status()
         items = response.json().get("results", [])
-        return [{"title": x.get("title", ""), "url": x.get("url", ""), "content": x.get("content", ""), "score": x.get("score", 0)} for x in items]
+        return [{"title": x.get("title", ""), "url": x.get("url", ""),
+                 "content": x.get("content", ""), "raw_content": x.get("raw_content") or "",
+                 "score": x.get("score", 0)} for x in items]
+
+    def extract(self, urls: list[str]) -> dict[str, str]:
+        """Retry pages whose raw body was missing from Search; never return snippets."""
+        if not urls:
+            return {}
+        if len(urls) > 20:
+            raise ValueError("Tavily Extract accepts at most 20 URLs per request")
+        response = httpx.post(
+            "https://api.tavily.com/extract",
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            json={"urls": urls, "extract_depth": "basic"},
+            timeout=90,
+        )
+        response.raise_for_status()
+        return {item["url"]: item.get("raw_content") or ""
+                for item in response.json().get("results", []) if item.get("url")}
 
 
 def provider_from_env():

@@ -16,6 +16,7 @@ def test_api_persists_run(tmp_path, monkeypatch):
     assert detail["result"]["sources"]
     assert client.get("/api/runs").json()[0]["id"] == run_id
     assert client.get("/health").json()["status"] == "ok"
+    assert client.get("/health").json()["model_enabled"] is False
     assert "Research Agent" in client.get("/").text
 
 
