@@ -1,6 +1,22 @@
 # Starts a live Tavily-backed demo on port 8001. The key is held in this process only.
 $ErrorActionPreference = 'Stop'
 $promptedForKey = $false
+$loadedLocalKey = $false
+if (-not $env:TAVILY_API_KEY) {
+    $localEnv = Join-Path $PSScriptRoot '.env.local'
+    if (Test-Path -LiteralPath $localEnv) {
+        $keyLine = Get-Content -LiteralPath $localEnv |
+            Where-Object { $_ -match '^\s*TAVILY_API_KEY\s*=' } |
+            Select-Object -First 1
+        if ($keyLine) {
+            $value = ($keyLine -split '=', 2)[1].Trim().Trim('"', "'")
+            if ($value) {
+                $env:TAVILY_API_KEY = $value
+                $loadedLocalKey = $true
+            }
+        }
+    }
+}
 if (-not $env:TAVILY_API_KEY) {
     $secureKey = Read-Host 'Enter your Tavily API key (input hidden)' -AsSecureString
     $keyPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
@@ -19,5 +35,5 @@ try {
     python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 } finally {
     Pop-Location
-    if ($promptedForKey) { Remove-Item Env:TAVILY_API_KEY -ErrorAction SilentlyContinue }
+    if ($promptedForKey -or $loadedLocalKey) { Remove-Item Env:TAVILY_API_KEY -ErrorAction SilentlyContinue }
 }

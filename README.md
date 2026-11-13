@@ -36,7 +36,7 @@ See [the exact workflow and result fields](FLOW.md) for the current search and a
 
 Use `.env.example` as a configuration reference, then export `SEARCH_PROVIDER=tavily` and `TAVILY_API_KEY` in your shell or process manager. Export `OPENAI_API_KEY` and `OPENAI_MODEL` to enable a model-written summary. The application does not read `.env` automatically. If model output lacks valid source numbers, it falls back to an extractive summary. Offline fixture mode is the verified path.
 
-On Windows, run `./start_live.ps1` from this directory. It prompts for the Tavily key without echoing it, starts a separate live server at <http://127.0.0.1:8001>, and does not write the key to a file. The existing offline server on port 8000 can remain running. Live Tavily results depend on your API plan and network access.
+On Windows, run `./start_live.ps1` from this directory. It reads `TAVILY_API_KEY` from an ignored `.env.local` if present, or prompts for the key without echoing it. It starts a separate live server at <http://127.0.0.1:8001>. The existing offline server on port 8000 can remain running. Live Tavily results depend on your API plan and network access.
 
 ## Verification
 
