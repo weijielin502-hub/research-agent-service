@@ -1,0 +1,7 @@
+[
+  {"title": "Battery recycling pilot expands", "url": "https://example.org/energy/recycling", "content": "A fictional city pilot adds neighborhood battery collection points and records collection volume weekly. Operators report that clear labels and pickup schedules reduce sorting errors.", "score": 0.91},
+  {"title": "Collection program design notes", "url": "https://example.net/research/collection", "content": "A synthetic research note compares drop-off centers with scheduled pickup. It recommends measuring contamination rates, travel time, and participation before expanding the service.", "score": 0.85},
+  {"title": "Battery recycling pilot expands", "url": "https://example.org/energy/recycling?campaign=demo", "content": "A duplicate fixture item exists to exercise canonical URL and title deduplication.", "score": 0.55},
+  {"title": "Community collection dashboard", "url": "https://example.com/data/dashboard", "content": "A fictional dashboard shows collection counts by week and district. The sample highlights missing data and publishes a data dictionary to explain each field.", "score": 0.76},
+  {"title": "Safety guidance for collection staff", "url": "https://example.edu/guides/safety", "content": "This synthetic guide tells staff to separate damaged batteries, record incidents, and escalate uncertain cases to a trained supervisor.", "score": 0.71}
+]

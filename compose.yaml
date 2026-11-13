@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:////data/research.db
+      SEARCH_PROVIDER: fixture
+    volumes:
+      - research_data:/data
+    restart: unless-stopped
+volumes:
+  research_data:

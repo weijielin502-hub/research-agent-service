@@ -1,0 +1,70 @@
+{
+  "topic": "Battery recycling programs",
+  "events": [
+    {
+      "step": "search",
+      "attempt": 1,
+      "query": "Battery recycling programs"
+    },
+    {
+      "step": "evaluate",
+      "attempt": 1,
+      "sources": 2
+    },
+    {
+      "step": "search",
+      "attempt": 2,
+      "query": "Battery recycling programs overview"
+    },
+    {
+      "step": "evaluate",
+      "attempt": 2,
+      "sources": 4
+    },
+    {
+      "step": "synthesize",
+      "mode": "extractive",
+      "sources": 4
+    }
+  ],
+  "result": {
+    "answer": "## Battery recycling programs\n\nSample brief grounded in the listed sources:\n- A fictional city pilot adds neighborhood battery collection points and records collection volume weekly. Operators report that clear labels and pickup schedules reduce sorting errors. [1]\n- A synthetic research note compares drop-off centers with scheduled pickup. It recommends measuring contamination rates, travel time, and participation before expanding the service. [2]\n- A fictional dashboard shows collection counts by week and district. The sample highlights missing data and publishes a data dictionary to explain each field. [3]\n- This synthetic guide tells staff to separate damaged batteries, record incidents, and escalate uncertain cases to a trained supervisor. [4]",
+    "sources": [
+      {
+        "id": 1,
+        "title": "Battery recycling pilot expands",
+        "url": "https://example.org/energy/recycling",
+        "content": "A fictional city pilot adds neighborhood battery collection points and records collection volume weekly. Operators report that clear labels and pickup schedules reduce sorting errors.",
+        "score": 0.91,
+        "domain": "example.org"
+      },
+      {
+        "id": 2,
+        "title": "Collection program design notes",
+        "url": "https://example.net/research/collection",
+        "content": "A synthetic research note compares drop-off centers with scheduled pickup. It recommends measuring contamination rates, travel time, and participation before expanding the service.",
+        "score": 0.85,
+        "domain": "example.net"
+      },
+      {
+        "id": 3,
+        "title": "Community collection dashboard",
+        "url": "https://example.com/data/dashboard",
+        "content": "A fictional dashboard shows collection counts by week and district. The sample highlights missing data and publishes a data dictionary to explain each field.",
+        "score": 0.76,
+        "domain": "example.com"
+      },
+      {
+        "id": 4,
+        "title": "Safety guidance for collection staff",
+        "url": "https://example.edu/guides/safety",
+        "content": "This synthetic guide tells staff to separate damaged batteries, record incidents, and escalate uncertain cases to a trained supervisor.",
+        "score": 0.71,
+        "domain": "example.edu"
+      }
+    ],
+    "summary_mode": "extractive",
+    "coverage_warning": false,
+    "queries_used": 2
+  }
+}
