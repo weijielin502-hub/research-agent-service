@@ -56,7 +56,7 @@ def summarize(topic: str, sources: list[dict]) -> tuple[str, str]:
             LOG.warning("Model answer lacked valid citations; using extractive fallback")
         except Exception:
             LOG.exception("Model summary failed; using extractive fallback")
-    lines = [f"## {topic}", "", "Sample brief grounded in the listed sources:"]
+    lines = [f"## {topic}", "", "Brief grounded in the listed sources:"]
     for source in sources[:4]:
         excerpt = source["content"][:220].rstrip()
         lines.append(f"- {excerpt} [{source['id']}]")

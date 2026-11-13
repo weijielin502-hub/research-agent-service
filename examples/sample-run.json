@@ -28,7 +28,7 @@
     }
   ],
   "result": {
-    "answer": "## Battery recycling programs\n\nSample brief grounded in the listed sources:\n- A fictional city pilot adds neighborhood battery collection points and records collection volume weekly. Operators report that clear labels and pickup schedules reduce sorting errors. [1]\n- A synthetic research note compares drop-off centers with scheduled pickup. It recommends measuring contamination rates, travel time, and participation before expanding the service. [2]\n- A fictional dashboard shows collection counts by week and district. The sample highlights missing data and publishes a data dictionary to explain each field. [3]\n- This synthetic guide tells staff to separate damaged batteries, record incidents, and escalate uncertain cases to a trained supervisor. [4]",
+    "answer": "## Battery recycling programs\n\nBrief grounded in the listed sources:\n- A fictional city pilot adds neighborhood battery collection points and records collection volume weekly. Operators report that clear labels and pickup schedules reduce sorting errors. [1]\n- A synthetic research note compares drop-off centers with scheduled pickup. It recommends measuring contamination rates, travel time, and participation before expanding the service. [2]\n- A fictional dashboard shows collection counts by week and district. The sample highlights missing data and publishes a data dictionary to explain each field. [3]\n- This synthetic guide tells staff to separate damaged batteries, record incidents, and escalate uncertain cases to a trained supervisor. [4]",
     "sources": [
       {
         "id": 1,
