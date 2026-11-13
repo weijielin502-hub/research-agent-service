@@ -1,18 +1,16 @@
 # Starts a live Tavily-backed demo on port 8001. The key is held in this process only.
 $ErrorActionPreference = 'Stop'
 $promptedForKey = $false
-$loadedLocalKey = $false
-if (-not $env:TAVILY_API_KEY) {
-    $localEnv = Join-Path $PSScriptRoot '.env.local'
-    if (Test-Path -LiteralPath $localEnv) {
-        $keyLine = Get-Content -LiteralPath $localEnv |
-            Where-Object { $_ -match '^\s*TAVILY_API_KEY\s*=' } |
-            Select-Object -First 1
-        if ($keyLine) {
-            $value = ($keyLine -split '=', 2)[1].Trim().Trim('"', "'")
-            if ($value) {
-                $env:TAVILY_API_KEY = $value
-                $loadedLocalKey = $true
+$loadedLocalKeys = @()
+$localEnv = Join-Path $PSScriptRoot '.env.local'
+if (Test-Path -LiteralPath $localEnv) {
+    foreach ($line in Get-Content -LiteralPath $localEnv) {
+        if ($line -match '^\s*(TAVILY_API_KEY|OPENAI_API_KEY|OPENAI_BASE_URL|OPENAI_MODEL)\s*=(.*)$') {
+            $name = $matches[1]
+            $value = $matches[2].Trim().Trim('"', "'")
+            if ($value -and -not [Environment]::GetEnvironmentVariable($name, 'Process')) {
+                [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+                $loadedLocalKeys += $name
             }
         }
     }
@@ -35,5 +33,8 @@ try {
     python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 } finally {
     Pop-Location
-    if ($promptedForKey -or $loadedLocalKey) { Remove-Item Env:TAVILY_API_KEY -ErrorAction SilentlyContinue }
+    if ($promptedForKey) { Remove-Item Env:TAVILY_API_KEY -ErrorAction SilentlyContinue }
+    foreach ($name in $loadedLocalKeys) {
+        Remove-Item -LiteralPath ("Env:" + $name) -ErrorAction SilentlyContinue
+    }
 }

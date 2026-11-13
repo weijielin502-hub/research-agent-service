@@ -30,7 +30,7 @@ class TavilySearch:
         response = httpx.post(
             "https://api.tavily.com/search",
             headers={"Authorization": f"Bearer {self.api_key}"},
-            json={"query": query, "max_results": 5, "search_depth": "basic"},
+            json={"query": query, "max_results": 20, "search_depth": "basic"},
             timeout=15,
         )
         response.raise_for_status()

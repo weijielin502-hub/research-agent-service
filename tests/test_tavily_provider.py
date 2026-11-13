@@ -22,4 +22,5 @@ def test_tavily_request_uses_bearer_header(monkeypatch):
     assert seen["headers"] == {"Authorization": "Bearer test-key"}
     assert "api_key" not in seen["json"]
     assert seen["json"]["query"] == "example query"
+    assert seen["json"]["max_results"] == 20
     assert items[0]["title"] == "Example"

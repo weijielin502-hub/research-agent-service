@@ -1,4 +1,7 @@
-from app.agent import ResearchAgent, canonical_url, normalize_items
+import json
+from types import SimpleNamespace
+
+from app.agent import ResearchAgent, canonical_url, normalize_items, summarize
 from app.providers import FixtureSearch
 
 
@@ -33,3 +36,37 @@ def test_search_failure_is_recorded():
     else:
         assert False, "Expected failure"
     assert [x["step"] for x in events].count("search_error") == 2
+
+
+def test_model_receives_all_twenty_bounded_sources_and_checks_citations(monkeypatch):
+    seen = {}
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            seen["client"] = kwargs
+            self.chat = SimpleNamespace(completions=self)
+
+        def create(self, **kwargs):
+            seen["request"] = kwargs
+            return SimpleNamespace(choices=[SimpleNamespace(
+                message=SimpleNamespace(content=seen["answer"]))])
+
+    monkeypatch.setattr("app.agent.OpenAI", FakeClient)
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("OPENAI_MODEL", "deepseek-flash")
+    sources = [{"id": i, "title": f"Source {i}", "url": f"https://example.org/{i}",
+                "content": "x" * 1200} for i in range(1, 21)]
+
+    seen["answer"] = "Finding [1]. Another finding [20]."
+    answer, mode = summarize("topic", sources)
+    records = json.loads(seen["request"]["messages"][1]["content"].split("Source records:\n", 1)[1])
+    assert mode == "model" and answer == seen["answer"]
+    assert len(records) == 20 and records[-1]["id"] == 20
+    assert all(len(record["content"]) == 800 for record in records)
+    assert seen["client"]["base_url"] == "https://api.deepseek.com"
+    assert seen["request"]["extra_body"] == {"thinking": {"type": "disabled"}}
+
+    seen["answer"] = "Unsupported claim [21]."
+    answer, mode = summarize("topic", sources)
+    assert mode == "extractive" and "[1]" in answer

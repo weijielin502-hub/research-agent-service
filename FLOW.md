@@ -27,7 +27,7 @@ flowchart TD
     Q -- No --> R
 ```
 
-Each Tavily request asks for at most five basic search results. The agent currently uses at most two fixed queries; it does not ask a model to create the search plan. A second query runs only if the first leaves fewer than three usable sources. No date window or independent fact checking is implemented.
+Each Tavily request asks for at most 20 basic search results. The agent currently uses at most two fixed queries; it does not ask a model to create the search plan. A second query runs only if the first leaves fewer than three usable sources. Deduplication may leave fewer than 20 results. Each retained result contributes up to 800 characters of source text to the model input. No date window or independent fact checking is implemented.
 
 ## Result fields
 
