@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB) ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688) ![Tests](https://img.shields.io/badge/tests-pytest-6A5ACD)
 
-**A traceable research task, from question to source-linked brief.** This demo turns a small retrieval workflow into an API-backed agent with bounded search decisions, persistent run history, explicit failure states, and a simple UI. Offline mode uses synthetic articles at `example.*` domains and needs no secrets.
+**A quick proof of concept for turning a question into a source-linked research brief.** This portfolio demo shows a small retrieval workflow as an API-backed agent with bounded search decisions, persistent run history, explicit failure states, and a simple UI. It is intended for local exploration and interviews, not production research or unattended fact checking. Offline mode uses synthetic articles at `example.*` domains and needs no secrets.
 
 ## Try it in two minutes
 
